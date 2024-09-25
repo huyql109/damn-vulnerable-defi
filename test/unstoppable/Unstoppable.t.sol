@@ -6,6 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {UnstoppableVault, Owned} from "../../src/unstoppable/UnstoppableVault.sol";
 import {UnstoppableMonitor} from "../../src/unstoppable/UnstoppableMonitor.sol";
+import "forge-std/console.sol";
 
 contract UnstoppableChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -92,7 +93,26 @@ contract UnstoppableChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_unstoppable() public checkSolvedByPlayer {
+        // The goal is halt the flashLoan() feature
+        // In flashLoan(), there is a check if (convertToShares(totalSupply) != balanceBefore) => InvalidBalance => fail to flashLoan
         
+        // balanceBefore == totalAssets(), which is the total amount of assets "managed" (owned) by the vault
+        // In this case, it is override by the UnstoppableVault contract, hence the number of ERC20 tokens owned by the ERC4626 contract 
+        // function totalAssets() public view override nonReadReentrant returns (uint256) {
+        //     return asset.balanceOf(address(this));
+        // }
+
+        // totalSupply is the total supply of the tokens or total numbe of tokens to be created
+        // https://www.rareskills.io/post/erc4626
+
+        // Create mismatch between those 2 by sending 1 ether to the vault, which increases the totalAssets by 1
+        // The totalSupply is calculate based on the totalAssets (totalSupply * totalSupply/totalAssets)
+        token.transfer(address(vault), 1);
+
+        // Note: If use deposit(), it will trigger _mint() => _update(address(0), account, value)
+        // => totalSupply += value in ERC20 which increase totalSupply
+
+        console.log("token.balanceOf(vault): ", token.balanceOf(address(vault)));
     }
 
     /**

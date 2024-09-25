@@ -7,7 +7,7 @@ import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 import {IERC20} from "@openzeppelin/contracts/interfaces/IERC20.sol";
 import {MerkleProof} from "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
 import {BitMaps} from "@openzeppelin/contracts/utils/structs/BitMaps.sol";
-
+import {console} from "forge-std/Test.sol";
 struct Distribution {
     uint256 remaining;
     uint256 nextBatchNumber;
@@ -69,6 +69,7 @@ contract TheRewarderDistributor {
     }
 
     function clean(IERC20[] calldata tokens) external {
+        console.log("owner: ", owner);
         for (uint256 i = 0; i < tokens.length; i++) {
             IERC20 token = tokens[i];
             if (distributions[token].remaining == 0) {
