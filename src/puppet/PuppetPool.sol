@@ -5,6 +5,7 @@ pragma solidity =0.8.25;
 import {ReentrancyGuard} from "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 import {Address} from "@openzeppelin/contracts/utils/Address.sol";
 import {DamnValuableToken} from "../DamnValuableToken.sol";
+import {console} from "forge-std/Test.sol";
 
 contract PuppetPool is ReentrancyGuard {
     using Address for address payable;
