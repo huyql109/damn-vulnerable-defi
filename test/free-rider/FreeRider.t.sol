@@ -11,7 +11,7 @@ import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {FreeRiderNFTMarketplace} from "../../src/free-rider/FreeRiderNFTMarketplace.sol";
 import {FreeRiderRecoveryManager} from "../../src/free-rider/FreeRiderRecoveryManager.sol";
 import {DamnValuableNFT} from "../../src/DamnValuableNFT.sol";
-
+import {FreeRiderSolve} from "./FreeRiderSolve.sol";
 contract FreeRiderChallenge is Test {
     address deployer = makeAddr("deployer");
     address player = makeAddr("player");
@@ -123,7 +123,21 @@ contract FreeRiderChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_freeRider() public checkSolvedByPlayer {
-        
+        // The buyMany() function handles buying request in batch, the _buyOne() function only checks the msg.value 
+        // sent to it, which means if the msg.value sent to it >= priceToPay of an nft, it can buy all nfts in the tokenIds[] list.
+
+        // After purchase, the owner of an nft is the buyer, then the marketplace again sends eth to it
+        // payable(_token.ownerOf(tokenId)).sendValue(priceToPay);
+        // => The buyer has both nft + eth
+
+        FreeRiderSolve sol = new FreeRiderSolve(
+            recoveryManager,
+            weth,
+            nft,
+            uniswapPair,
+            marketplace
+        );
+        sol.attack();
     }
 
     /**

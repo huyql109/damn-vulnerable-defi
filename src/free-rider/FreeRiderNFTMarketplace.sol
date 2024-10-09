@@ -90,6 +90,7 @@ contract FreeRiderNFTMarketplace is ReentrancyGuard {
 
     function _buyOne(uint256 tokenId) private {
         uint256 priceToPay = offers[tokenId];
+
         if (priceToPay == 0) {
             revert TokenNotOffered(tokenId);
         }

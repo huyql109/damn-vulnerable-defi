@@ -5,7 +5,7 @@ pragma solidity =0.8.25;
 import {Test, console} from "forge-std/Test.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {TrusterLenderPool} from "../../src/truster/TrusterLenderPool.sol";
-import {TrusterExploit} from "./TrusterExploit.sol";
+import {TrusterSolve} from "./TrusterSolve.sol";
 
 contract TrusterChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -69,7 +69,7 @@ contract TrusterChallenge is Test {
         // token.transfer(address(recovery), TOKENS_IN_POOL);
         
         // This solution doesnt have that issues
-        TrusterExploit exp = new TrusterExploit(token, pool, recovery);
+        TrusterSolve exp = new TrusterSolve(token, pool, recovery);
         exp.attack();
     }
 

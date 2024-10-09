@@ -4,7 +4,7 @@ pragma solidity =0.8.25;
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {TrusterLenderPool} from "../../src/truster/TrusterLenderPool.sol";
 
-contract TrusterExploit {
+contract TrusterSolve {
 
     address public immutable recovery;
 

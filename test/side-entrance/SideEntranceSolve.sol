@@ -5,7 +5,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {SideEntranceLenderPool} from "../../src/side-entrance/SideEntranceLenderPool.sol";
 import {SafeTransferLib} from "solady/utils/SafeTransferLib.sol";
 
-contract SideEntranceExploit {
+contract SideEntranceSolve {
     uint256 constant ETHER_IN_POOL = 1000e18;
 
     address public immutable recovery;
