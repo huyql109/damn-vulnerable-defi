@@ -7,7 +7,7 @@ import {Safe} from "@safe-global/safe-smart-account/contracts/Safe.sol";
 import {SafeProxyFactory} from "@safe-global/safe-smart-account/contracts/proxies/SafeProxyFactory.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
 import {WalletRegistry} from "../../src/backdoor/WalletRegistry.sol";
-
+import {BackdoorSolve} from "./BackdoorSolve.sol";
 contract BackdoorChallenge is Test {
     address deployer = makeAddr("deployer");
     address player = makeAddr("player");
@@ -70,7 +70,32 @@ contract BackdoorChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_backdoor() public checkSolvedByPlayer {
-        
+        // The vulnerability of this contract is the way safeproxyFactory can be used to make delegateCall
+        // safeProxyFactory::createProxyWithCallback() -> safeProxyFactory::createProxyWithNonce() -> safeProxyFactory::deployProxy()
+
+        // safeProxyFactory::deployProxy() makes internal call to safeProxy::setup() -> safeProxy::setupModules()
+        // safeProxy::setupModules() makes delegateCall to abitrary contract, one can create a malicious contract which approves
+        // token from wallet to the attacker contract
+
+        // Later, safeProxyFactory::createProxyWithCallback() -> WalletRegistry::proxyCreated() which remove owners as beneficiary 
+        // So we can set users to owners => disable their beneficiary role
+        // Then it transfer token to the wallet address
+
+        // Because we already approve the attacker contract to spend token of wallet address
+        // We can transfer token to the attacker contract
+
+        // Finally transfer token to recovery account
+
+        BackdoorSolve sol = new BackdoorSolve(
+            token,
+            singletonCopy,
+            walletFactory,
+            walletRegistry,
+            player,
+            recovery
+        );
+
+        sol.solve();
     }
 
     /**
