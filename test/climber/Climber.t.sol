@@ -7,6 +7,7 @@ import {ClimberVault} from "../../src/climber/ClimberVault.sol";
 import {ClimberTimelock, CallerNotTimelock, PROPOSER_ROLE, ADMIN_ROLE} from "../../src/climber/ClimberTimelock.sol";
 import {ERC1967Proxy} from "@openzeppelin/contracts/proxy/ERC1967/ERC1967Proxy.sol";
 import {DamnValuableToken} from "../../src/DamnValuableToken.sol";
+import {ClimberSolve, UpgradedClimberVault} from "./ClimberSolve.sol";
 
 contract ClimberChallenge is Test {
     address deployer = makeAddr("deployer");
@@ -49,7 +50,7 @@ contract ClimberChallenge is Test {
         );
 
         // Get a reference to the timelock deployed during creation of the vault
-        timelock = ClimberTimelock(payable(vault.owner()));
+        timelock = ClimberTimelock(payable(vault.owner())); // Type cast the addres of ClimberTimelock created in ClimberVault::initialize()
 
         // Deploy token and transfer initial token balance to the vault
         token = new DamnValuableToken();
@@ -85,7 +86,12 @@ contract ClimberChallenge is Test {
      * CODE YOUR SOLUTION HERE
      */
     function test_climber() public checkSolvedByPlayer {
-        
+        // The contract that implements the UUPS standard in the OpenZeppelin library is named UUPSUpgradeable.sol. 
+        // This contract should be inherited by the implementation contracts, not by the proxy contract.
+        // ClimberVault inherits UUPSUpgradeable => ClimberVault is proxy
+
+        ClimberSolve exp = new ClimberSolve(vault, timelock, token, recovery);
+        exp.solve();
     }
 
     /**
